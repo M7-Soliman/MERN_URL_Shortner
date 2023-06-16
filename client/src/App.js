@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 function App() {
   const [url, setUrl] = useState('');
   const [shortenedUrl, setShortenedUrl] = useState('');
+  const [qrCode, setQRCode] = useState('');
 
   const handleUrlChange = (e) => {
     setUrl(e.target.value);
@@ -26,6 +27,7 @@ function App() {
     const data = await response.json();
 
     setShortenedUrl(data.shortUrl);
+    setQRCode(data.qrCode);
   };
 
   const containerStyle = {
@@ -70,6 +72,12 @@ function App() {
     marginTop: '20px',
   };
 
+  const qrCodeStyle = {
+    display: 'block',
+    margin: '10px auto',
+    textAlign: 'center',
+  };
+
   return (
     <div style={containerStyle}>
       <h2 style={headingStyle}>URL Shortener</h2>
@@ -95,6 +103,9 @@ function App() {
           <a href={shortenedUrl} target="_blank" rel="noopener noreferrer">
             {shortenedUrl}
           </a>
+          {qrCode && (
+            <img src={`data:image/svg+xml;utf8,${encodeURIComponent(qrCode)}`} alt="QR Code" style={qrCodeStyle} />
+          )}
         </div>
       )}
     </div>

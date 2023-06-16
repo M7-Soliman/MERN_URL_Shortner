@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const shortid = require('shortid');
 const path = require('path');
+const QRCode = require('qrcode'); // QR code generation library
 
 const app = express();
 
@@ -41,7 +42,10 @@ app.post('/api/url', async (req, res) => {
 
   await url.save();
 
-  res.json({ shortUrl });
+  // Generate QR code for the shortened URL
+  const qrCode = await generateQRCode(shortUrl);
+
+  res.json({ shortUrl, qrCode });
 });
 
 // Redirect shortened URL to full address
@@ -60,6 +64,17 @@ app.get('/:shortUrl', async (req, res) => {
   }
 });
 
+// Serve QR codes
+app.get('/api/qrcode/:shortUrl', async (req, res) => {
+  const { shortUrl } = req.params;
+
+  // Generate QR code for the shortened URL
+  const qrCode = await generateQRCode(shortUrl);
+
+  // Serve the QR code image or SVG
+  res.type('svg').send(qrCode);
+});
+
 // Route for handling all other requests
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'client/build/index.html'));
@@ -70,3 +85,13 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+// Helper function to generate QR code for a given URL
+async function generateQRCode(url) {
+  try {
+    return await QRCode.toString(url, { type: 'svg' });
+  } catch (error) {
+    console.error('Failed to generate QR code:', error);
+    return ''; // Return empty string or handle the error as needed
+  }
+}
