@@ -3,10 +3,22 @@ import React, { useState } from 'react';
 function App() {
   const [url, setUrl] = useState('');
   const [shortenedUrl, setShortenedUrl] = useState('');
+  const [expiration, setExpiration] = useState({
+    duration: '',
+    unit: 'minutes',
+  });
   const [qrCode, setQRCode] = useState('');
 
   const handleUrlChange = (e) => {
     setUrl(e.target.value);
+  };
+
+  const handleDurationChange = (e) => {
+    setExpiration({ ...expiration, duration: e.target.value });
+  };
+
+  const handleUnitChange = (e) => {
+    setExpiration({ ...expiration, unit: e.target.value });
   };
 
   const handleSubmit = async (e) => {
@@ -21,13 +33,39 @@ function App() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ fullUrl: url }),
+      body: JSON.stringify({
+        fullUrl: url,
+        expiresIn: convertToSeconds(expiration.duration, expiration.unit),
+      }),
     });
 
     const data = await response.json();
 
     setShortenedUrl(data.shortUrl);
     setQRCode(data.qrCode);
+  };
+
+  const convertToSeconds = (duration, unit) => {
+    let seconds = parseInt(duration);
+
+    switch (unit) {
+      case 'minutes':
+        seconds *= 60;
+        break;
+      case 'hours':
+        seconds *= 60 * 60;
+        break;
+      case 'days':
+        seconds *= 60 * 60 * 24;
+        break;
+      case 'weeks':
+        seconds *= 60 * 60 * 24 * 7;
+        break;
+      default:
+        break;
+    }
+
+    return seconds;
   };
 
   const containerStyle = {
@@ -58,6 +96,15 @@ function App() {
     boxSizing: 'border-box',
   };
 
+  const selectStyle = {
+    width: '100%',
+    padding: '10px',
+    borderRadius: '4px',
+    border: '1px solid #ccc',
+    boxSizing: 'border-box',
+    marginTop: '5px',
+  };
+
   const buttonStyle = {
     width: '100%',
     padding: '10px',
@@ -74,8 +121,8 @@ function App() {
 
   const qrCodeStyle = {
     display: 'block',
+    maxWidth: '200px',
     margin: '10px auto',
-    textAlign: 'center',
   };
 
   return (
@@ -93,6 +140,27 @@ function App() {
             placeholder="https://example.com"
           />
         </div>
+        <div style={formGroupStyle}>
+          <label htmlFor="duration">Expiration Duration:</label>
+          <input
+            type="number"
+            id="duration"
+            value={expiration.duration}
+            onChange={handleDurationChange}
+            style={inputStyle}
+          />
+          <select
+            id="unit"
+            value={expiration.unit}
+            onChange={handleUnitChange}
+            style={selectStyle}
+          >
+            <option value="minutes">Minutes</option>
+            <option value="hours">Hours</option>
+            <option value="days">Days</option>
+            <option value="weeks">Weeks</option>
+          </select>
+        </div>
         <button type="submit" style={buttonStyle}>
           Shorten
         </button>
@@ -105,7 +173,7 @@ function App() {
           </a>
           {qrCode && (
             <img src={`data:image/svg+xml;utf8,${encodeURIComponent(qrCode)}`} alt="QR Code" style={qrCodeStyle} />
-          )}
+            )}
         </div>
       )}
     </div>

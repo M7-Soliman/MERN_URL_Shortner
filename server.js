@@ -17,6 +17,7 @@ const urlSchema = new mongoose.Schema({
   fullUrl: { type: String, required: true },
   shortUrl: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
+  expiresAt: { type: Date },
 });
 
 const Url = mongoose.model('Url', urlSchema);
@@ -29,15 +30,19 @@ app.use(express.static(path.join(__dirname, 'client/build')));
 
 // API endpoint to create a shortened URL
 app.post('/api/url', async (req, res) => {
-  const { fullUrl } = req.body;
+  const { fullUrl, expiresIn } = req.body;
 
   // Generate a short URL
   const shortUrl = shortid.generate();
+
+  // Calculate the expiration date
+  const expiresAt = expiresIn ? new Date(Date.now() + expiresIn * 1000) : undefined;
 
   // Create a new URL document in MongoDB
   const url = new Url({
     fullUrl,
     shortUrl,
+    expiresAt,
   });
 
   await url.save();
@@ -56,8 +61,13 @@ app.get('/:shortUrl', async (req, res) => {
   const url = await Url.findOne({ shortUrl });
 
   if (url) {
-    // Redirect to the full URL
-    res.redirect(url.fullUrl);
+    if (url.expiresAt && url.expiresAt <= new Date()) {
+      // URL has expired, handle accordingly (e.g., redirect to an expired page)
+      res.status(404).send('URL has expired');
+    } else {
+      // Redirect to the full URL
+      res.redirect(url.fullUrl);
+    }
   } else {
     // Short URL not found, handle the error accordingly
     res.status(404).send('URL not found');
