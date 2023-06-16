@@ -1,7 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const shortid = require('shortid');
-const moment = require('moment');
+const path = require('path');
 
 const app = express();
 
@@ -24,7 +24,7 @@ const Url = mongoose.model('Url', urlSchema);
 app.use(express.json());
 
 // Serve the React app
-app.use(express.static('client/build'));
+app.use(express.static(path.join(__dirname, 'client/build')));
 
 // API endpoint to create a shortened URL
 app.post('/api/url', async (req, res) => {
@@ -42,6 +42,22 @@ app.post('/api/url', async (req, res) => {
   await url.save();
 
   res.json({ shortUrl });
+});
+
+// Redirect shortened URL to full address
+app.get('/:shortUrl', async (req, res) => {
+  const { shortUrl } = req.params;
+
+  // Find the full URL in MongoDB based on the short URL
+  const url = await Url.findOne({ shortUrl });
+
+  if (url) {
+    // Redirect to the full URL
+    res.redirect(url.fullUrl);
+  } else {
+    // Short URL not found, handle the error accordingly
+    res.status(404).send('URL not found');
+  }
 });
 
 // Route for handling all other requests

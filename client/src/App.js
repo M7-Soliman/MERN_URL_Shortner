@@ -28,20 +28,73 @@ function App() {
     setShortenedUrl(data.shortUrl);
   };
 
+  const containerStyle = {
+    maxWidth: '400px',
+    margin: '0 auto',
+    padding: '20px',
+    backgroundColor: '#f4f4f4',
+    borderRadius: '8px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+  };
+
+  const headingStyle = {
+    textAlign: 'center',
+    marginBottom: '20px',
+    fontSize: '24px',
+    color: '#333',
+  };
+
+  const formGroupStyle = {
+    marginBottom: '10px',
+  };
+
+  const inputStyle = {
+    width: '100%',
+    padding: '10px',
+    borderRadius: '4px',
+    border: '1px solid #ccc',
+    boxSizing: 'border-box',
+  };
+
+  const buttonStyle = {
+    width: '100%',
+    padding: '10px',
+    backgroundColor: '#4caf50',
+    color: '#fff',
+    borderRadius: '4px',
+    border: 'none',
+    cursor: 'pointer',
+  };
+
+  const resultStyle = {
+    marginTop: '20px',
+  };
+
   return (
-    <div className="container">
-      <h2>URL Shortener</h2>
+    <div style={containerStyle}>
+      <h2 style={headingStyle}>URL Shortener</h2>
       <form onSubmit={handleSubmit}>
-        <div className="form-group">
+        <div style={formGroupStyle}>
           <label htmlFor="url">Enter a URL:</label>
-          <input type="text" id="url" value={url} onChange={handleUrlChange} placeholder="https://example.com" />
+          <input
+            type="text"
+            id="url"
+            value={url}
+            onChange={handleUrlChange}
+            style={inputStyle}
+            placeholder="https://example.com"
+          />
         </div>
-        <button type="submit">Shorten</button>
+        <button type="submit" style={buttonStyle}>
+          Shorten
+        </button>
       </form>
       {shortenedUrl && (
-        <div className="result">
+        <div style={resultStyle}>
           <p>Shortened URL:</p>
-          <a href={shortenedUrl} target="_blank" rel="noopener noreferrer">{shortenedUrl}</a>
+          <a href={shortenedUrl} target="_blank" rel="noopener noreferrer">
+            {shortenedUrl}
+          </a>
         </div>
       )}
     </div>
